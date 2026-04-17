@@ -62,7 +62,7 @@ func main() {
 		c.String(http.StatusOK, "User-agent: *\nDisallow:\n")
 	})
 	r.GET("/", func(c *gin.Context) {
-		c.Redirect(http.StatusFound, "https://hnrss.github.io/")
+		c.Data(http.StatusOK, "text/html; charset=utf-8", []byte(docsHTML))
 	})
 
 	flag.Parse()
