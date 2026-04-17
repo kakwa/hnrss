@@ -7,14 +7,6 @@ The [project page](https://hnrss.kakwalab.ovh/) explains all available RSS feeds
 
 ## Building
 
-**Requirements:** Go 1.25.0+
-
-Build a stripped Linux amd64 binary (embeds the current git tag as version string):
-
-```bash
-make hnrss_linux_amd64
-```
-
 To build for the local platform without stripping:
 
 ```bash
@@ -37,33 +29,68 @@ The server handles `SIGINT` (Ctrl-C) with a 5-second graceful shutdown.
 
 ## Deploying
 
-There is no containerization or process supervisor configuration included. A minimal deployment looks like:
+### SystemD Daemon + Nginx
 
-1. Build the binary on a machine with Go installed (or cross-compile with `make hnrss_linux_amd64`).
-2. Copy the binary to the target host.
-3. Run it under a process supervisor (systemd, runit, etc.).
+Copy the binary:
 
-**Example systemd unit** (`/etc/systemd/system/hnrss.service`):
+```bash
+install -m 755 hnrss /usr/local/bin
+```
+create SystemD unit `/etc/systemd/system/hnrss.service`:
 
 ```ini
 [Unit]
-Description=hnrss Hacker News RSS service
+Description=Hacker News RSS
 After=network.target
 
 [Service]
-ExecStart=/usr/local/bin/hnrss -bind 127.0.0.1:9000
-Restart=on-failure
-DynamicUser=yes
+Type=simple
+Restart=always
+ExecStart=/usr/local/bin/hnrss -bind 127.0.0.1:9001
+User=daemon
+Group=daemon
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=hnrss
 
 [Install]
 WantedBy=multi-user.target
 ```
 
 ```bash
+systemctl daemon-reload
 sudo systemctl enable --now hnrss
 ```
 
-Put a reverse proxy (nginx, Caddy, etc.) in front if you need TLS or a public-facing port.
+And put a reverse proxy (nginx, Caddy, etc.) in front if it, for example:
+
+```apache
+server {
+	server_name hnrss.kakwalab.ovh;
+
+   location / {
+     proxy_pass http://127.0.0.1:9001;
+   }
+
+    # TODO: check if it works without certificate
+    listen 443 ssl;
+    #ssl_certificate /etc/letsencrypt/live/hnrss.kakwalab.ovh/fullchain.pem; # managed by Certbot
+    #ssl_certificate_key /etc/letsencrypt/live/hnrss.kakwalab.ovh/privkey.pem; # managed by Certbot
+    #include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
+    #ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
+}
+  
+server {
+	server_name hnrss.kakwalab.ovh;
+  listen 80;
+
+  location / {
+    proxy_pass http://127.0.0.1:9001;
+  }
+}
+```
+
+finally, run certbot to get a proper certificate.
 
 ## Dependencies
 
