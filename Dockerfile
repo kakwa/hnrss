@@ -8,7 +8,7 @@ RUN go mod download
 
 COPY . .
 ARG VERSION=unknown
-RUN CGO_ENABLED=0 GOOS=linux go build -trimpath \
+RUN GIN_MODE=release CGO_ENABLED=0 GOOS=linux go build -trimpath \
 	-ldflags "-s -w -X main.buildString=${VERSION}" \
 	-o /out/hnrss .
 

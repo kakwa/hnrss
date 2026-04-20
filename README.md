@@ -92,6 +92,42 @@ server {
 
 finally, run certbot to get a proper certificate.
 
+### K8S Deployment
+
+A few env vars for our registry and kubectl/helm:
+```shell
+export REGISTRY_USER=R_USER
+export REGISTRY_PASSWORD=R_PASSWORD
+export REGISTRY_HOST=registry.example.com
+export REGISTRY=${REGISTRY_HOST}
+export KUBECONFIG=$HOME/.kubeconfig
+```
+
+Publishing a new version of the docker image in our registry:
+
+```shell
+./scripts/publish-image.sh
+```
+
+Creating or updating the service definition:
+```shell
+# Create a namespace for the service (if necessary)
+kubectl create namespace hnrss
+
+# Apply helm configuration
+cd helm/
+helm upgrade --install hnrss ./ --namespace hnrss --set registryAuth.password="$REGISTRY_PASSWORD"
+```
+
+Rolling out a new version:
+
+```shell
+kubectl rollout restart deployment -n hnrss
+```
+
+
 ## Dependencies
 
 Runtime dependencies are fetched from the Algolia Hacker News Search API and the Hacker News website directly — no local database or cache is required. The service is stateless.
+
+
