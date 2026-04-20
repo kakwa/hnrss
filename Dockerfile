@@ -13,7 +13,7 @@ RUN CGO_ENABLED=0 GOOS=linux go build -trimpath \
 	-o /out/hnrss .
 
 FROM gcr.io/distroless/static-debian12:nonroot
-ARG CONTAINER_NAME=hnrss/hnrss-ai-filtering
+ARG CONTAINER_NAME=hnrss
 LABEL org.opencontainers.image.title="${CONTAINER_NAME}"
 COPY --from=builder /out/hnrss /hnrss
 USER nonroot:nonroot

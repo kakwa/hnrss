@@ -9,7 +9,7 @@
 #   REGISTRY_USER / REGISTRY_PASSWORD
 #                   When both are set, runs docker login with basic auth
 #                   (password-stdin). Omit both to skip login.
-#   CONTAINER_NAME  Repository path under the registry (default: hnrss/hnrss-ai-filtering)
+#   CONTAINER_NAME  Repository path under the registry (default: hnrss, matches helm/values.yaml)
 #   IMAGE_NAME      Alias for CONTAINER_NAME when CONTAINER_NAME is unset
 #   IMAGE_TAG       Image tag (default: git describe --tags --always, else latest)
 #   BUILD_CONTEXT   Docker build context directory (default: repo root)
@@ -23,14 +23,14 @@ cd "$root"
 
 : "${REGISTRY_HOST:?REGISTRY_HOST is required (registry hostname, e.g. ghcr.io)}"
 
-image_repo="${CONTAINER_NAME:-${IMAGE_NAME:-hnrss/hnrss-ai-filtering}}"
+image_repo="${CONTAINER_NAME:-${IMAGE_NAME:-hnrss}}"
 IMAGE_TAG="${IMAGE_TAG:-}"
-if [[ -z "${IMAGE_TAG}" ]]; then
-	IMAGE_TAG="$(git describe --tags --always 2>/dev/null || true)"
-fi
-if [[ -z "${IMAGE_TAG}" ]]; then
-	IMAGE_TAG="latest"
-fi
+#if [[ -z "${IMAGE_TAG}" ]]; then
+#	IMAGE_TAG="$(git describe --tags --always 2>/dev/null || true)"
+#fi
+#if [[ -z "${IMAGE_TAG}" ]]; then
+IMAGE_TAG="latest"
+#fi
 
 BUILD_CONTEXT="${BUILD_CONTEXT:-$root}"
 
